@@ -33,3 +33,6 @@ resposta = post(endereco, json=dados)
 #         id_do_arquivo = foto_mais_resolucao["file_id"]
 # # depois baixa o arquivo e faz algo com ele...
 #         proximo_id_de_update = resultado["update_id"] + 1
+
+
+#test123
