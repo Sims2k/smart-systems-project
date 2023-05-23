@@ -1,38 +1,98 @@
-
+from dotenv import load_dotenv
 from requests import get, post
+import threading
 from time import sleep
-from os import system
+from datetime import datetime
+import os
+import json
 from subprocess import Popen
+from urllib.request import urlretrieve
+#from play_music import *
+import smartcar 
 
-chave = "6093760208:AAESod3lvOAnbSWNXN9uZ-yh9mmulGhu1kc"
-endereco_base = "https://api.telegram.org/bot" + chave
-
-id_da_conversa = "6165418939"
-
-
-
-endereco = endereco_base + "/sendMessage"
-dados = {"chat_id": id_da_conversa, "text": "Oi!"}
-resposta = post(endereco, json=dados)
-
-# proximo_id_de_update = 0
-# while True:
-#     endereco = endereco_base + "/getUpdates"
-#     dados = {"offset": proximo_id_de_update}
-#     resposta = get(endereco, json=dados)
-#     dicionario_da_resposta = resposta.json()
-#     for resultado in dicionario_da_resposta["result"]:
-#         mensagem = resultado["message"]
-#         if "text" in mensagem:
-#         texto = mensagem["text"]
-#         elif "voice" in mensagem:
-#         id_do_arquivo = mensagem["voice"]["file_id"]
-#         # depois baixa o arquivo e faz algo com ele...
-#         elif "photo" in mensagem:
-#         foto_mais_resolucao = mensagem["photo"][-1]
-#         id_do_arquivo = foto_mais_resolucao["file_id"]
-# # depois baixa o arquivo e faz algo com ele...
-#         proximo_id_de_update = resultado["update_id"] + 1
+sc = smartcar.SmartCar()
 
 
-#test123
+load_dotenv()
+
+#Setup Spotify API
+# https://www.youtube.com/watch?v=WAmEZBEeNmg
+spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
+spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+
+#Chatbot Setup
+teleg_key = os.getenv("TELEGRAM_KEY")
+conversation_id = os.getenv("CONVERSATION_ID")
+base_address = "https://api.telegram.org/bot" + teleg_key
+
+# #IFTTT settings
+# ifttt_key = "nuv4dZThvVokdMVaS-t6XKfSmjjCtf6vnIP2Lh8h3u_"
+
+def now_datetime():
+    now  = datetime.now() 
+    now_string = now.strftime("%d-%m-%Y_%H.%M.%S")   
+    return now_string
+
+now = now_datetime()
+print(now)
+
+def unix_to_datetime(data):
+    #data = json.load('json_file_with_telegram_message.json')
+    messageTime = data['date'] # UNIX time
+    messageTime = datetime.utcfromtimestamp(messageTime) # datetime format
+    #messageTime = messageTime.strftime('%Y-%m-%d %H:%M:%S') # formatted datetime
+    TimeStamp = messageTime
+    return TimeStamp
+
+def download(download_id, file_type):
+    address = base_address + "/getFile"
+    data = {"file_id": download_id} 
+    response = get(address, json=data) 
+    dictionary = response.json() 
+    link_ending = dictionary["result"]["file_path"] 
+    file_link = "https://api.telegram.org/file/bot" + teleg_key + "/" + link_ending
+
+    if file_type == "photo":
+        file_destination = "/home/mendel/SmartMoves/AddOn/ChatBot/audio/" + now_datetime() + ".jpg" 
+        urlretrieve(file_link, str(file_destination))
+    elif file_type == "voice":
+        file_destination = "/home/mendel/SmartMoves/AddOn/ChatBot/audio/" + now_datetime() + ".wav"
+        urlretrieve(file_link, str(file_destination))
+
+
+address = base_address + "/sendMessage"
+data = {"chat_id": conversation_id, "text": "Hello how can I help you?"}
+response = post(address, json=data)
+
+next_update_id = 0
+active_bot = True
+
+while active_bot:
+    address = base_address + "/getUpdates"
+    data = {"offset": next_update_id}
+    response = get(address, json=data)
+    dictionary_of_response = response.json()
+    json_formatted_str = json.dumps(dictionary_of_response["result"], indent=2)
+    print(json_formatted_str)
+    for result in dictionary_of_response["result"]:
+        message = result["message"]
+        file_datetime = unix_to_datetime(message)
+        print("file time:" + str(file_datetime))
+        if "text" in message:
+            text = message["text"]
+            print(text)
+            if text == "start":
+              sc.lane_detection_loop()
+                #threading.Thread(target = sc.lane_detection_loop).start()
+            
+        elif "voice" in message:
+            file_id = message["voice"]["file_id"]
+            #download(file_id, "voice")
+            threading.Thread(target = download, args = (file_id, "voice",)).start()
+        elif "photo" in message:
+            photo_high_res = message["photo"][-1]
+            file_id = photo_high_res["file_id"]
+            #download(file_id, "photo")
+            threading.Thread(target = download, args = (file_id, "photo",)).start()
+        next_update_id = result["update_id"] + 1
+        
