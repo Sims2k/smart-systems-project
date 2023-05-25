@@ -103,6 +103,8 @@ def on_message(client, userdata, message):
     if topic_str == tl:
         phasemqtt = payload_str
 
+# Clara: MQTT callback neue topics 
+
 # MQTT publishing of smartcar values
 def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase):
     client.publish("SMARTCAR_status/mode", mode)
@@ -111,6 +113,7 @@ def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase):
     client.publish("SMARTCAR_status/campan", campan)
     client.publish("SMARTCAR_status/camtilt", camtilt)
     client.publish("SMARTCAR_status/tlphase", tlphase)
+    # Clara: hier alle status topics dazu die vom Auto an das dashboard gesendet werden müssen 
 
 def analyze_draw_objects(draw, objs):
     objects = []
