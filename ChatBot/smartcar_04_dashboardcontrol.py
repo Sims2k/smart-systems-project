@@ -101,19 +101,23 @@ def on_message(client, userdata, message):
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
     #elif topic_str == "SMARTCAR_control/turn"
+        #steer = float(payload_str)
      #   pass 
     #elif topic_str == "SMARTCAR_control/speed"
+        #speed = float(payload_str)
      #   pass
     #elif topic_str == "SMARTCAR_control/camtilit"
+        #camtilit = float(payload_str)
      #   pass
     #elif topic_str == "SMARTCAR_control/campan"
+        #campan = float(payload_str)
       #  pass
     #elif topic_str == "SMARTCAR_control/music"
+        #music = payload_str
      #   pass
     if topic_str == tl:
         phasemqtt = payload_str
 
-# Clara: MQTT callback neue topics 
 
 # MQTT publishing of smartcar values
 def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase, music):
@@ -124,7 +128,7 @@ def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase, music):
     client.publish("SMARTCAR_status/camtilt", camtilt)
     client.publish("SMARTCAR_status/tlphase", tlphase)
     #client.publish("SMARTCAR_status/music", music)
-    # Clara: hier alle status topics dazu die vom Auto an das dashboard gesendet werden müssen 
+    
 
 def analyze_draw_objects(draw, objs):
     objects = []
@@ -151,6 +155,11 @@ def main():
     client.connect("localhost", 1883, 60)
     client.on_message = on_message
     client.subscribe("SMARTCAR_control/mode")
+    #client.subscribe("SMARTCAR_control/turn")
+    #client.subscribe("SMARTCAR_control/speed")
+    #client.subscribe("SMARTCAR_control/camtilt")
+    #client.subscribe("SMARTCAR_control/campan")
+    #client.subscribe("SMARTCAR_control/music")
     client.subscribe(tl)
     client.loop_start()
     # SmartCar object without using the local camera and control window
@@ -244,9 +253,12 @@ def main():
         client.loop_stop()
         client.unsubscribe(tl)
         client.unsubscribe("SMARTCAR_control/mode")
+        #client.unsubscribe("SMARTCAR_control/turn")
+        #client.unsubscribe("SMARTCAR_control/speed")
+        #client.unsubscribe("SMARTCAR_control/camtilt")
+        #client.unsubscribe("SMARTCAR_control/campan")
+        #client.unsubscribe("SMARTCAR_control/music")
         client.disconnect()
 
 if __name__ == "__main__":
     main()
-
-#test
