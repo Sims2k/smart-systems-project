@@ -1,4 +1,4 @@
-import smartcar
+import ChatBot.smartcar as smartcar
 import time
 import paho.mqtt.client as mqtt
 import paho.mqtt.subscribe as subscribe

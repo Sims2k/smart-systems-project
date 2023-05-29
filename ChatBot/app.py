@@ -8,7 +8,7 @@ import json
 from subprocess import Popen
 from urllib.request import urlretrieve
 #from play_music import *
-import smartcar 
+import ChatBot.smartcar as smartcar 
 
 sc = smartcar.SmartCar()
 
