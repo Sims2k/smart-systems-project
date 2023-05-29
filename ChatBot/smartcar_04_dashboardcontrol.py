@@ -100,19 +100,30 @@ def on_message(client, userdata, message):
             mode = "tlviamqtt"
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
+    #elif topic_str == "SMARTCAR_control/turn"
+     #   pass 
+    #elif topic_str == "SMARTCAR_control/speed"
+     #   pass
+    #elif topic_str == "SMARTCAR_control/camtilit"
+     #   pass
+    #elif topic_str == "SMARTCAR_control/campan"
+      #  pass
+    #elif topic_str == "SMARTCAR_control/music"
+     #   pass
     if topic_str == tl:
         phasemqtt = payload_str
 
 # Clara: MQTT callback neue topics 
 
 # MQTT publishing of smartcar values
-def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase):
+def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase, music):
     client.publish("SMARTCAR_status/mode", mode)
     client.publish("SMARTCAR_status/speed", speed)
     client.publish("SMARTCAR_status/steer", steer)
     client.publish("SMARTCAR_status/campan", campan)
     client.publish("SMARTCAR_status/camtilt", camtilt)
     client.publish("SMARTCAR_status/tlphase", tlphase)
+    #client.publish("SMARTCAR_status/music", music)
     # Clara: hier alle status topics dazu die vom Auto an das dashboard gesendet werden müssen 
 
 def analyze_draw_objects(draw, objs):
