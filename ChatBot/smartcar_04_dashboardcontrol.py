@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.subscribe as subscribe
 import cv2
 import numpy as np
+import play_music
 
 # CNN stuff
 from PIL import Image, ImageFont, ImageDraw
