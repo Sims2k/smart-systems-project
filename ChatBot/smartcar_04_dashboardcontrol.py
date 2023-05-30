@@ -87,7 +87,7 @@ def sendframe(frame):
 
 # MQTT receive callback
 def on_message(client, userdata, message):
-    global mode, phasemqtt, steer, speed, camtilt_value, campan_value
+    global mode, phasemqtt, steer, speed, camtilt, campan, music 
     steer = "inactive"
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
@@ -102,15 +102,20 @@ def on_message(client, userdata, message):
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
     if topic_str == "SMARTCAR_control/turn":
-        steer = payload_str 
+        if payload_str == "steer_value":
+            steer = "steer_value" 
     if topic_str == "SMARTCAR_control/speed":
-        speed = payload_str 
+        if payload_str == "speed_value":
+            speed = "speed_value"
     if topic_str == "SMARTCAR_control/camtilt":
-        camtilt_value = payload_str
+        if payload_str == "camtilt_value":
+            camtilt = "camtilt_value"
     if topic_str == "SMARTCAR_control/campan":
-        campan_value = payload_str
-    #if topic_str == "SMARTCAR_control/music":
-     #   payload_str == "music"
+        if payload_str == "campan_value":
+            campan = "campan_value"
+    if topic_str == "SMARTCAR_control/music":
+        if payload_str == "music":
+            music = "music title"
     if topic_str == tl:
         phasemqtt = payload_str
 
@@ -232,11 +237,21 @@ def main():
                 sendframe(sc.frame)
                 phase2send = phasecnn
 
-            elif steer == payload_str:
+            elif steer == "steer_value":
                 if steer == "right":
                     sc.user_command("d") #d is for right turn in smartcar user_command
                 elif steer == "left":
                     sc.user_command("a") #d is for left turn in smartcar user_command
+
+            elif speed == "speed_value":
+                
+
+            elif camtilt == "camtilt value":
+
+            elif campan == "campan_value":
+
+            elif music == "music title":
+
 
             # mode standby
             else:
