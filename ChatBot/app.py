@@ -7,15 +7,11 @@ import os
 import json
 from subprocess import Popen
 from urllib.request import urlretrieve
-#from play_music import *
-import ChatBot.smartcar as smartcar 
+from play_music import *
+import smartcar
+
 
 load_dotenv()
-
-#Setup Spotify API
-# https://www.youtube.com/watch?v=WAmEZBEeNmg
-spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
-spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
 
 #Chatbot Setup
 teleg_key = os.getenv("TELEGRAM_KEY")
@@ -35,11 +31,16 @@ def unix_to_datetime(data):
     TimeStamp = messageTime
     return TimeStamp
 
-def lane_detection(is_running):
+# Create a stop flag and lock for synchronization
+lane_detection_stop_flag = threading.Event()
+lane_detection_thread = None
+
+def lane_detection():
     sc = smartcar.SmartCar()
-    is_running = True
-    while is_running:
+    while not lane_detection_stop_flag.is_set():
+        print("Self-driving is running...")
         sc.lane_detection_loop()
+        sleep(1)
 
 def download(download_id, file_type):
     address = base_address + "/getFile"
@@ -49,11 +50,12 @@ def download(download_id, file_type):
     link_ending = dictionary["result"]["file_path"] 
     file_link = "https://api.telegram.org/file/bot" + teleg_key + "/" + link_ending
     if file_type == "photo":
-        file_destination = "/home/mendel/SmartMoves/AddOn/ChatBot/audio/" + now_datetime() + ".jpg" 
+        file_destination = "/home/mendel/SmartMoves/AddOn/ChatBot/images/" + now_datetime() + ".jpg" 
         urlretrieve(file_link, str(file_destination))
     elif file_type == "voice":
         file_destination = "/home/mendel/SmartMoves/AddOn/ChatBot/audio/" + now_datetime() + ".wav"
         urlretrieve(file_link, str(file_destination))
+        translate_audio(file_destination)
 
 
 address = base_address + "/sendMessage"
@@ -77,19 +79,26 @@ while active_bot:
         print("file time:" + str(file_datetime))
         if "text" in message:
             text = message["text"]
-            print(text)
+            '''
+            The lane_detection_thread variable to keep track of the thread running the lane_detection() function. Initially, it is set to None. When the "start" text is received, we check if the lane_detection_thread is None or not alive. If it is None or not alive, indicating that the lane detection is not running, we start a new thread for the lane_detection() function. We also clear the lane_detection_stop_flag to ensure the function can execute.When the "stop" text is received, we set the lane_detection_stop_flag to stop the lane detection. Additionally, we check if the lane_detection_thread exists and is alive, and then call lane_detection_thread.join() to wait for the thread to complete before proceeding.
+            '''
             if text == "start":
-                lane_detection(True)
-                #threading.Thread(target = sc.lane_detection_loop).start()
+                if lane_detection_thread is None or not lane_detection_thread.is_alive():
+                    # Start the lane detection thread
+                    lane_detection_stop_flag.clear()
+                    lane_detection_thread = threading.Thread(target=lane_detection)
+                    lane_detection_thread.start()
             elif text == "stop":
-                lane_detection(False)
+                # Set the stop flag to stop the lane detection
+                lane_detection_stop_flag.set()
+                if lane_detection_thread is not None and lane_detection_thread.is_alive():
+                    lane_detection_thread.join()
         elif "voice" in message:
             file_id = message["voice"]["file_id"]
             download(file_id, "voice")
-            #threading.Thread(target = download, args = (file_id, "voice",)).start()
         elif "photo" in message:
             photo_high_res = message["photo"][-1]
             file_id = photo_high_res["file_id"]
             download(file_id, "photo")
-            #threading.Thread(target = download, args = (file_id, "photo",)).start()
+            
         next_update_id = result["update_id"] + 1
