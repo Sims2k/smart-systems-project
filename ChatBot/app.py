@@ -7,7 +7,7 @@ import os
 import json
 from subprocess import Popen
 from urllib.request import urlretrieve
-#from play_music import *
+from play_music import *
 import ChatBot.smartcar as smartcar 
 
 load_dotenv()
