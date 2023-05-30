@@ -102,10 +102,8 @@ def on_message(client, userdata, message):
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
     if topic_str == "SMARTCAR_control/steer":
-        if payload_str == "left":
-
-        elif payload_str == "right":
-
+        if payload_str == "left"
+        
     if topic_str == "SMARTCAR_control/speed":
         payload_str == "speed"
     if topic_str == "SMARTCAR_control/camtilit":
