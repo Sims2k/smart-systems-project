@@ -87,7 +87,8 @@ def sendframe(frame):
 
 # MQTT receive callback
 def on_message(client, userdata, message):
-    global mode, phasemqtt
+    global mode, phasemqtt, steer, speed, music 
+    steer = "inactive"
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
     print(f"Received: topic={topic_str}  payload={payload_str}")
@@ -100,21 +101,15 @@ def on_message(client, userdata, message):
             mode = "tlviamqtt"
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
-    #elif topic_str == "SMARTCAR_control/turn"
-        #steer = float(payload_str)
-     #   pass 
-    #elif topic_str == "SMARTCAR_control/speed"
-        #speed = float(payload_str)
-     #   pass
-    #elif topic_str == "SMARTCAR_control/camtilit"
-        #camtilit = float(payload_str)
-     #   pass
-    #elif topic_str == "SMARTCAR_control/campan"
-        #campan = float(payload_str)
-      #  pass
-    #elif topic_str == "SMARTCAR_control/music"
-        #music = payload_str
-     #   pass
+    if topic_str == "SMARTCAR_control/turn":
+        if payload_str == "steer_value":
+            steer = "steer_value" 
+    if topic_str == "SMARTCAR_control/speed":
+        if payload_str == "speed_value":
+            speed = "speed_value"
+    if topic_str == "SMARTCAR_control/music":
+        if payload_str == "music":
+            music = "music title"
     if topic_str == tl:
         phasemqtt = payload_str
 
@@ -127,7 +122,7 @@ def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase, music):
     client.publish("SMARTCAR_status/campan", campan)
     client.publish("SMARTCAR_status/camtilt", camtilt)
     client.publish("SMARTCAR_status/tlphase", tlphase)
-    #client.publish("SMARTCAR_status/music", music)
+    client.publish("SMARTCAR_status/music", music)
     
 
 def analyze_draw_objects(draw, objs):
@@ -155,11 +150,9 @@ def main():
     client.connect("localhost", 1883, 60)
     client.on_message = on_message
     client.subscribe("SMARTCAR_control/mode")
-    #client.subscribe("SMARTCAR_control/turn")
-    #client.subscribe("SMARTCAR_control/speed")
-    #client.subscribe("SMARTCAR_control/camtilt")
-    #client.subscribe("SMARTCAR_control/campan")
-    #client.subscribe("SMARTCAR_control/music")
+    client.subscribe("SMARTCAR_control/turn")
+    client.subscribe("SMARTCAR_control/speed")
+    client.subscribe("SMARTCAR_control/music")
     client.subscribe(tl)
     client.loop_start()
     # SmartCar object without using the local camera and control window
@@ -235,6 +228,20 @@ def main():
                 sc.handle_window()
                 sendframe(sc.frame)
                 phase2send = phasecnn
+
+            elif steer == "steer_value":
+                if steer >= 0:
+                    print("right")
+                else:
+                    print("left")
+
+            elif speed == "speed_value":
+                if speed >= 0:
+                    print(speed)
+
+            #elif music == "music title":
+
+
             # mode standby
             else:
                 sc.speed = 0
@@ -246,6 +253,7 @@ def main():
                 sendframe(sc.frame)
             # Publish the current values of the SmartCar
             publish_mqtt(client, mode, sc.speed, sc.steer, sc.campan, sc.camtilt, phase2send)
+            
     finally:
         # Clean up the SmartCar object
         sc = None
@@ -253,13 +261,12 @@ def main():
         client.loop_stop()
         client.unsubscribe(tl)
         client.unsubscribe("SMARTCAR_control/mode")
-        #client.unsubscribe("SMARTCAR_control/turn")
-        #client.unsubscribe("SMARTCAR_control/speed")
-        #client.unsubscribe("SMARTCAR_control/camtilt")
-        #client.unsubscribe("SMARTCAR_control/campan")
-        #client.unsubscribe("SMARTCAR_control/music")
+        client.unsubscribe("SMARTCAR_control/turn")
+        client.unsubscribe("SMARTCAR_control/speed")
+        client.unsubscribe("SMARTCAR_control/camtilt")
+        client.unsubscribe("SMARTCAR_control/campan")
+        client.unsubscribe("SMARTCAR_control/music")
         client.disconnect()
 
 if __name__ == "__main__":
     main()
-#test
