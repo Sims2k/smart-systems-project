@@ -86,8 +86,9 @@ def sendframe(frame):
         s.sendall(bytes(b64, 'utf-8'))
 
 # MQTT receive callback
-def on_message(client, userdata, message, steer):
-    global mode, phasemqtt
+def on_message(client, userdata, message):
+    global mode, phasemqtt, steer, direction 
+    steer = "inactive"
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
     print(f"Received: topic={topic_str}  payload={payload_str}")
@@ -100,15 +101,13 @@ def on_message(client, userdata, message, steer):
             mode = "tlviamqtt"
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
-    if topic_str == "SMARTCAR_control/steer":
-        if payload_str == "left":
-            steer = "left"
-        elif payload_str == "right":
-            steer = "right"
+    if topic_str == "SMARTCAR_control/turn":
+        mode = "steer"
+        steer = payload_str 
     if topic_str == "SMARTCAR_control/speed":
-        payload_str == "speed"
-    if topic_str == "SMARTCAR_control/camtilit":
-        payload_str == "speed"
+        speed = "speed value"
+    if topic_str == "SMARTCAR_control/camtilt":
+        payload_str == "camtilt value"
     if topic_str == "SMARTCAR_control/campan":
         payload_str == "campan"
     if topic_str == "SMARTCAR_control/music":
@@ -233,6 +232,13 @@ def main():
                 sc.handle_window()
                 sendframe(sc.frame)
                 phase2send = phasecnn
+
+            elif mode == "steer":
+                if steer == "right":
+                    sc.user_command("d") #d is for right turn in smartcar user_command
+                elif steer == "left":
+                    sc.user_command("a") #d is for left turn in smartcar user_command
+
             # mode standby
             else:
                 sc.speed = 0
@@ -244,7 +250,7 @@ def main():
                 sendframe(sc.frame)
             # Publish the current values of the SmartCar
             publish_mqtt(client, mode, sc.speed, sc.steer, sc.campan, sc.camtilt, phase2send)
-            # music hier noch dazu?
+            
     finally:
         # Clean up the SmartCar object
         sc = None
