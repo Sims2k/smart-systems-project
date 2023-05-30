@@ -101,21 +101,19 @@ def on_message(client, userdata, message):
             mode = "tlviamqtt"
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
-    elif topic_str == "SMARTCAR_control/turn":
-        steer = float(payload_str)
-        pass 
-    elif topic_str == "SMARTCAR_control/speed":
-        speed = float(payload_str)
-        pass
-    elif topic_str == "SMARTCAR_control/camtilit":
-        camtilit = float(payload_str)
-        pass
-    elif topic_str == "SMARTCAR_control/campan":
-        campan = float(payload_str)
-        pass
-    elif topic_str == "SMARTCAR_control/music":
-        music = payload_str
-        pass
+    if topic_str == "SMARTCAR_control/steer":
+        if payload_str == "left":
+
+        elif payload_str == "right":
+
+    if topic_str == "SMARTCAR_control/speed":
+        payload_str == "speed"
+    if topic_str == "SMARTCAR_control/camtilit":
+        payload_str == "speed"
+    if topic_str == "SMARTCAR_control/campan":
+        payload_str == "campan"
+    if topic_str == "SMARTCAR_control/music":
+        payload_str == "music"
     if topic_str == tl:
         phasemqtt = payload_str
 
