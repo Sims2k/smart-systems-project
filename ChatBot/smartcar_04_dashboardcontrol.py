@@ -87,7 +87,7 @@ def sendframe(frame):
 
 # MQTT receive callback
 def on_message(client, userdata, message):
-    global mode, phasemqtt, steer, speed, camtilt, campan, music 
+    global mode, phasemqtt, steer, speed, music 
     steer = "inactive"
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
@@ -107,12 +107,6 @@ def on_message(client, userdata, message):
     if topic_str == "SMARTCAR_control/speed":
         if payload_str == "speed_value":
             speed = "speed_value"
-    if topic_str == "SMARTCAR_control/camtilt":
-        if payload_str == "camtilt_value":
-            camtilt = "camtilt_value"
-    if topic_str == "SMARTCAR_control/campan":
-        if payload_str == "campan_value":
-            campan = "campan_value"
     if topic_str == "SMARTCAR_control/music":
         if payload_str == "music":
             music = "music title"
@@ -158,8 +152,6 @@ def main():
     client.subscribe("SMARTCAR_control/mode")
     client.subscribe("SMARTCAR_control/turn")
     client.subscribe("SMARTCAR_control/speed")
-    client.subscribe("SMARTCAR_control/camtilt")
-    client.subscribe("SMARTCAR_control/campan")
     client.subscribe("SMARTCAR_control/music")
     client.subscribe(tl)
     client.loop_start()
@@ -245,10 +237,6 @@ def main():
 
             elif speed == "speed_value":
                 
-
-            elif camtilt == "camtilt value":
-
-            elif campan == "campan_value":
 
             elif music == "music title":
 
