@@ -4,7 +4,6 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.subscribe as subscribe
 import cv2
 import numpy as np
-import play_music
 
 # CNN stuff
 from PIL import Image, ImageFont, ImageDraw
@@ -87,7 +86,7 @@ def sendframe(frame):
         s.sendall(bytes(b64, 'utf-8'))
 
 # MQTT receive callback
-def on_message(client, userdata, message):
+def on_message(client, userdata, message, steer):
     global mode, phasemqtt
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
@@ -102,8 +101,10 @@ def on_message(client, userdata, message):
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
     if topic_str == "SMARTCAR_control/steer":
-        if payload_str == "left"
-        
+        if payload_str == "left":
+            steer = "left"
+        elif payload_str == "right":
+            steer = "right"
     if topic_str == "SMARTCAR_control/speed":
         payload_str == "speed"
     if topic_str == "SMARTCAR_control/camtilit":
