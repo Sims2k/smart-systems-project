@@ -230,15 +230,16 @@ def main():
                 phase2send = phasecnn
 
             elif steer == "steer_value":
-                if steer == "right":
-                    sc.user_command("d") #d is for right turn in smartcar user_command
-                elif steer == "left":
-                    sc.user_command("a") #d is for left turn in smartcar user_command
+                if steer >= 0:
+                    print("right")
+                else:
+                    print("left")
 
             elif speed == "speed_value":
-                
+                if speed >= 0:
+                    print(speed)
 
-            elif music == "music title":
+            #elif music == "music title":
 
 
             # mode standby
