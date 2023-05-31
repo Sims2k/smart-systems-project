@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from requests import get, post
 import threading
+import multiprocessing
 from time import sleep
 from datetime import datetime
 import os
@@ -8,7 +9,7 @@ import json
 from subprocess import Popen
 from urllib.request import urlretrieve
 from play_music import *
-import ChatBot.smartcar as smartcar 
+import smartcar 
 
 load_dotenv()
 
@@ -30,9 +31,9 @@ def unix_to_datetime(data):
     TimeStamp = messageTime
     return TimeStamp
 
-# Create a stop flag and lock for synchronization
-lane_detection_stop_flag = threading.Event()
-lane_detection_thread = None
+# Create a stop flag for synchronization
+lane_detection_stop_flag = multiprocessing.Event()
+lane_detection_process = None
 
 def lane_detection():
     sc = smartcar.SmartCar()
@@ -82,16 +83,16 @@ while active_bot:
             The lane_detection_thread variable to keep track of the thread running the lane_detection() function. Initially, it is set to None. When the "start" text is received, we check if the lane_detection_thread is None or not alive. If it is None or not alive, indicating that the lane detection is not running, we start a new thread for the lane_detection() function. We also clear the lane_detection_stop_flag to ensure the function can execute.When the "stop" text is received, we set the lane_detection_stop_flag to stop the lane detection. Additionally, we check if the lane_detection_thread exists and is alive, and then call lane_detection_thread.join() to wait for the thread to complete before proceeding.
             '''
             if text == "start":
-                if lane_detection_thread is None or not lane_detection_thread.is_alive():
-                    # Start the lane detection thread
+                if lane_detection_process is None or not lane_detection_process.is_alive():
+                    # Start the lane detection process
                     lane_detection_stop_flag.clear()
-                    lane_detection_thread = threading.Thread(target=lane_detection)
-                    lane_detection_thread.start()
+                    lane_detection_process = multiprocessing.Process(target=lane_detection)
+                    lane_detection_process.start()
             elif text == "stop":
                 # Set the stop flag to stop the lane detection
                 lane_detection_stop_flag.set()
-                if lane_detection_thread is not None and lane_detection_thread.is_alive():
-                    lane_detection_thread.join()
+                if lane_detection_process is not None and lane_detection_process.is_alive():
+                    lane_detection_process.join()
         elif "voice" in message:
             file_id = message["voice"]["file_id"]
             download(file_id, "voice")
