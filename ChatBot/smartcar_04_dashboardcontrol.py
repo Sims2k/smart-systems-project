@@ -87,8 +87,10 @@ def sendframe(frame):
 
 # MQTT receive callback
 def on_message(client, userdata, message):
-    global mode, phasemqtt, steer, speed, music 
+    global mode, phasemqtt, steer, speed, music
     steer = "inactive"
+    speed = "inactive"
+    music = "inactive"
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
     print(f"Received: topic={topic_str}  payload={payload_str}")
@@ -238,7 +240,7 @@ def main():
                     print("left")
 
             elif speed == "speed_value":
-                if speed >= 0:
+                if sc.speed >= 0:
                     print(speed)
 
             elif music == "start":
@@ -258,7 +260,7 @@ def main():
                 sc.handle_window()
                 sendframe(sc.frame)
             # Publish the current values of the SmartCar
-            publish_mqtt(client, mode, sc.speed, sc.steer, sc.campan, sc.camtilt, phase2send)
+            publish_mqtt(client, mode, sc.speed, sc.steer, sc.campan, sc.camtilt, phase2send, music)
             
     finally:
         # Clean up the SmartCar object
