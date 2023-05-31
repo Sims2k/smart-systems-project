@@ -108,8 +108,10 @@ def on_message(client, userdata, message):
         if payload_str == "speed_value":
             speed = "speed_value"
     if topic_str == "SMARTCAR_control/music":
-        if payload_str == "music":
-            music = "music title"
+        if payload_str == "start":
+            music = "start"
+        elif payload_str == "stop":
+            music == "stop"
     if topic_str == tl:
         phasemqtt = payload_str
 
@@ -239,7 +241,11 @@ def main():
                 if speed >= 0:
                     print(speed)
 
-            #elif music == "music title":
+            elif music == "start":
+                print("music_start")
+
+            elif music == "stop":
+                print("music_stop")    
 
 
             # mode standby
@@ -263,8 +269,6 @@ def main():
         client.unsubscribe("SMARTCAR_control/mode")
         client.unsubscribe("SMARTCAR_control/turn")
         client.unsubscribe("SMARTCAR_control/speed")
-        client.unsubscribe("SMARTCAR_control/camtilt")
-        client.unsubscribe("SMARTCAR_control/campan")
         client.unsubscribe("SMARTCAR_control/music")
         client.disconnect()
 
