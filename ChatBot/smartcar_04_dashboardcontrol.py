@@ -1,4 +1,4 @@
-import ChatBot.smartcar as smartcar
+import smartcar
 import time
 import paho.mqtt.client as mqtt
 import paho.mqtt.subscribe as subscribe
@@ -87,8 +87,10 @@ def sendframe(frame):
 
 # MQTT receive callback
 def on_message(client, userdata, message):
-    global mode, phasemqtt, steer, speed, music 
-    steer = "inactive"
+    global mode, phasemqtt, steer, speed, music
+    steer = 0
+    speed = 0
+    music = ""
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
     print(f"Received: topic={topic_str}  payload={payload_str}")
@@ -102,14 +104,14 @@ def on_message(client, userdata, message):
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
     if topic_str == "SMARTCAR_control/turn":
-        if payload_str == "steer_value":
-            steer = "steer_value" 
+            steer = payload_str
     if topic_str == "SMARTCAR_control/speed":
-        if payload_str == "speed_value":
-            speed = "speed_value"
+            speed = payload_str
     if topic_str == "SMARTCAR_control/music":
-        if payload_str == "music":
-            music = "music title"
+        if payload_str == "start":
+            music = "start"
+        elif payload_str == "stop":
+            music == "stop"
     if topic_str == tl:
         phasemqtt = payload_str
 
@@ -229,17 +231,23 @@ def main():
                 sendframe(sc.frame)
                 phase2send = phasecnn
 
-            elif steer == "steer_value":
-                if steer >= 0:
+            elif int(steer) > 0:
                     print("right")
-                else:
+            
+            elif int(steer) < 0:
                     print("left")
 
-            elif speed == "speed_value":
-                if speed >= 0:
-                    print(speed)
+            elif int(speed) > 0:
+                    print("speed "+speed)
 
-            #elif music == "music title":
+            elif int(speed) < 0: 
+                    print("nospeed "+speed)
+
+            elif music == "start":
+                print("music_start")
+
+            elif music == "stop":
+                print("music_stop")    
 
 
             # mode standby
@@ -252,7 +260,7 @@ def main():
                 sc.handle_window()
                 sendframe(sc.frame)
             # Publish the current values of the SmartCar
-            publish_mqtt(client, mode, sc.speed, sc.steer, sc.campan, sc.camtilt, phase2send)
+            publish_mqtt(client, mode, sc.speed, sc.steer, sc.campan, sc.camtilt, phase2send, music)
             
     finally:
         # Clean up the SmartCar object
@@ -263,8 +271,6 @@ def main():
         client.unsubscribe("SMARTCAR_control/mode")
         client.unsubscribe("SMARTCAR_control/turn")
         client.unsubscribe("SMARTCAR_control/speed")
-        client.unsubscribe("SMARTCAR_control/camtilt")
-        client.unsubscribe("SMARTCAR_control/campan")
         client.unsubscribe("SMARTCAR_control/music")
         client.disconnect()
 
