@@ -88,9 +88,9 @@ def sendframe(frame):
 # MQTT receive callback
 def on_message(client, userdata, message):
     global mode, phasemqtt, steer, speed, music
-    steer = "inactive"
-    speed = "inactive"
-    music = "inactive"
+    steer = ""
+    speed = ""
+    music = ""
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
     print(f"Received: topic={topic_str}  payload={payload_str}")
