@@ -89,7 +89,7 @@ def sendframe(frame):
 def on_message(client, userdata, message):
     global mode, phasemqtt, steer, speed, music
     steer = ""
-    speed = ""
+    speed = 0
     music = ""
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
@@ -107,8 +107,8 @@ def on_message(client, userdata, message):
         if payload_str == "steer_value":
             steer = "steer_value" 
     if topic_str == "SMARTCAR_control/speed":
-        if payload_str == "speed_value":
-            speed = "speed_value"
+            speed = payload_str
+
     if topic_str == "SMARTCAR_control/music":
         if payload_str == "start":
             music = "start"
@@ -239,9 +239,11 @@ def main():
                 else:
                     print("left")
 
-            elif speed == "speed_value":
-                if sc.speed >= 0:
-                    print(speed)
+            elif speed > 0:
+                    print("speed "+speed)
+
+            elif speed < 0: 
+                    print("nospeed "+speed)
 
             elif music == "start":
                 print("music_start")
