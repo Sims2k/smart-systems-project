@@ -88,7 +88,7 @@ def sendframe(frame):
 # MQTT receive callback
 def on_message(client, userdata, message):
     global mode, phasemqtt, steer, speed, music
-    steer = ""
+    steer = 0
     speed = 0
     music = ""
     topic_str = message.topic
@@ -104,11 +104,9 @@ def on_message(client, userdata, message):
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
     if topic_str == "SMARTCAR_control/turn":
-        if payload_str == "steer_value":
-            steer = "steer_value" 
+            steer = payload_str
     if topic_str == "SMARTCAR_control/speed":
             speed = payload_str
-
     if topic_str == "SMARTCAR_control/music":
         if payload_str == "start":
             music = "start"
@@ -233,16 +231,16 @@ def main():
                 sendframe(sc.frame)
                 phase2send = phasecnn
 
-            elif steer == "steer_value":
-                if steer >= 0:
+            elif int(steer) > 0:
                     print("right")
-                else:
+            
+            elif int(steer) < 0:
                     print("left")
 
-            elif speed > 0:
+            elif int(speed) > 0:
                     print("speed "+speed)
 
-            elif speed < 0: 
+            elif int(speed) < 0: 
                     print("nospeed "+speed)
 
             elif music == "start":
