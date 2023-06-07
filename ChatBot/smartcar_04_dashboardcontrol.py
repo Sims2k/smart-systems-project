@@ -241,7 +241,10 @@ def main():
                     print("speed "+speed)
 
             elif int(speed) < 0: 
-                    print("nospeed "+speed)
+                    print("negativespeed "+speed)
+
+            elif int(speed) == 0:
+                    print("pause" +speed)
 
             elif music == "start":
                 print("music_start")
