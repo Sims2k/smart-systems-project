@@ -233,24 +233,25 @@ def main():
 
             elif int(steer) > 0:
                     print("right")
-            
+                    break
             elif int(steer) < 0:
                     print("left")
-
+                    break 
             elif int(speed) > 0:
                     print("speed "+speed)
-
+                    break 
             elif int(speed) < 0: 
                     print("negativespeed "+speed)
-
+                    break 
             elif int(speed) == 0:
-                    print("pause" +speed)
-
+                    print("nospeed" +speed)
+                    break 
             elif music == "start":
                 print("music_start")
-
+                break 
             elif music == "stop":
-                print("music_stop")    
+                print("music_stop")  
+                break  
 
 
             # mode standby
