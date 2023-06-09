@@ -232,20 +232,20 @@ def main():
                 phase2send = phasecnn
 
             elif int(steer) > 0:
-                    print("right")
-                    break
+                print("right")
+                break
             elif int(steer) < 0:
-                    print("left")
-                    break 
+                print("left")
+                break 
             elif int(speed) > 0:
-                    print("speed "+speed)
-                    break 
+                print("speed "+speed)
+                break 
             elif int(speed) < 0: 
-                    print("negativespeed "+speed)
-                    break 
+                print("negativespeed "+speed)
+                break 
             elif int(speed) == 0:
-                    print("nospeed" +speed)
-                    break 
+                print("nospeed" +speed)
+                break 
             elif music == "start":
                 print("music_start")
                 break 
