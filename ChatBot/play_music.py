@@ -1,23 +1,19 @@
-from dotenv import load_dotenv
 import os
 import speech_recognition as sr
 from pydub import AudioSegment
-import webbrowser
-import requests
+from time import sleep
+from youtube_search import YoutubeSearch
+from pytube import YouTube
+from pytube.exceptions import RegexMatchError
 
-load_dotenv()
-
-# Setup YouTube API
-# You need to enable the YouTube Data API v3 and get an API key
-youtube_api_key = os.getenv("YOUTUBE_API_KEY")
-
+# Define the functions
 def convert_audio(input_file, output_file, output_format):
     audio = AudioSegment.from_file(input_file)
     audio.export(output_file, format=output_format)
 
 def translate_audio(file_path):
     convert_audio(file_path, file_path, "wav")
-    
+
     # Load the audio file and preprocess it if needed
     audio = AudioSegment.from_file(file_path)
     recognizer = sr.Recognizer()
@@ -26,22 +22,39 @@ def translate_audio(file_path):
     text = recognizer.recognize_google(audio_data)
     print(text)
 
-    # Check if the text contains the word "play"
-    if "play" in text.lower():
-        # Extract the song name from the text (assuming the format "Play <song name>")
-        song_name = text.lower().split("play", 1)[1].strip()
+    # Check if the text contains the word "play" or "stop playing"
+    lowercased_text = text.lower()
 
-        # Search for the song on YouTube
-        query = f"{song_name} audio"
-        search_url = f"https://www.googleapis.com/youtube/v3/search?key={youtube_api_key}&part=snippet&q={query}&type=video&maxResults=1"
-        response = requests.get(search_url)
-        json_data = response.json()
-        if json_data["items"]:
-            video_id = json_data["items"][0]["id"]["videoId"]
-            video_url = f"https://www.youtube.com/watch?v={video_id}"
-            print(f"Now playing: {song_name}")
+    if "stop playing" in lowercased_text:
+        stop_playing()
+    elif "play" in lowercased_text:
+        play_song(lowercased_text)
 
-            # Open the YouTube video in the same tab
-            webbrowser.open(video_url, new=0)
+def stop_playing():
+    print("Music stopped.")
+
+def play_song(text):
+    # Extract the song name from the text (assuming the format "Play <song name>")
+    song_name = text.lower().split("play", 1)[1].strip()
+
+    # Search for the song on YouTube
+    search_query = f"{song_name} audio"
+    try:
+        results = YoutubeSearch(search_query, max_results=5).to_dict()
+        if len(results) > 0:
+            print("Search Results:")
+            for i, video in enumerate(results, start=1):
+                print(f"{i}. {video['title']}")
+            print()
+
+            # Select the first result to play
+            video_id = results[0]["id"]
+            youtube_url = f"https://www.youtube.com/watch?v={video_id}"
+            audio_url = YouTube(youtube_url).streams.filter(only_audio=True).first().url
+            print(f"Now playing: {results[0]['title']}")
+            os.system(f"mpg123 -q {audio_url} > /dev/null 2>&1 &")
+            sleep(2)
         else:
-            print(f"No results found for: {song_name}")
+            print("No results found for the song.")
+    except RegexMatchError:
+        print("No results found for the song.")
