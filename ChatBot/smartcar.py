@@ -389,12 +389,12 @@ class SmartCar(object):
                 self.quit = True
             # driving commands
             if self.drive_control:
-                if key == ord('w'):
-                    self.speed = self.speed + 10
-                    print("speed:", self.speed)
-                elif key == ord('s'):
-                    self.speed = self.speed - 10
-                    print("speed:", self.speed)
+                #if key == ord('w'):
+                self.speed = self.speed + 10
+                print("speed:", self.speed)
+                #elif key == ord('s'):
+                    #self.speed = self.speed - 10
+                    #print("speed:", self.speed)
             # steering commands
             if self.steer_control:
                 if key == ord('a'):
