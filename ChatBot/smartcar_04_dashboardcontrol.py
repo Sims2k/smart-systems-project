@@ -1,4 +1,5 @@
 import smartcar
+from app import * 
 import time
 import paho.mqtt.client as mqtt
 import paho.mqtt.subscribe as subscribe
@@ -245,6 +246,7 @@ def main():
                
             elif int(speed) == 0:
                 print("nospeed" +speed)
+                stop_car()
                 
             elif music == "start":
                 print("music_start")
