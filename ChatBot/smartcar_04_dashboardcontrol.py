@@ -117,14 +117,14 @@ def on_message(client, userdata, message):
 
 
 # MQTT publishing of smartcar values
-def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase, music):
+def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase, song_name):
     client.publish("SMARTCAR_status/mode", mode)
     client.publish("SMARTCAR_status/speed", speed)
     client.publish("SMARTCAR_status/steer", steer)
     client.publish("SMARTCAR_status/campan", campan)
     client.publish("SMARTCAR_status/camtilt", camtilt)
     client.publish("SMARTCAR_status/tlphase", tlphase)
-    client.publish("SMARTCAR_status/music", music)
+    client.publish("SMARTCAR_status/music", song_name)
     
 
 def analyze_draw_objects(draw, objs):
