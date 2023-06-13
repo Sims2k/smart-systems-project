@@ -1,10 +1,12 @@
 import os
+from smartcar_04_dashboardcontrol import publish_mqtt
 import speech_recognition as sr
 from pydub import AudioSegment
 from time import sleep
 from youtube_search import YoutubeSearch
 from pytube import YouTube
 from pytube.exceptions import RegexMatchError
+
 
 # Define the functions
 def convert_audio(input_file, output_file, output_format):
@@ -51,6 +53,8 @@ def play_song(text):
             video_id = results[0]["id"]
             youtube_url = f"https://www.youtube.com/watch?v={video_id}"
             audio_url = YouTube(youtube_url).streams.filter(only_audio=True).first().url
+            song_name = results[0]['title']
+            publish_mqtt(song_name) 
             print(f"Now playing: {results[0]['title']}")
             os.system(f"mpg123 -q {audio_url} > /dev/null 2>&1 &")
             sleep(2)
