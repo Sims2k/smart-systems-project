@@ -5,48 +5,6 @@ import paho.mqtt.subscribe as subscribe
 import cv2
 import numpy as np
 import multiprocessing 
-
-# Create a stop flag for synchronization
-lane_detection_stop_flag = multiprocessing.Event()
-lane_detection_process = None
-
-def lane_detection():
-    sc = smartcar.SmartCar()
-    while not lane_detection_stop_flag.is_set():
-        print("Self-driving is running...")
-        sc.lane_detection_loop()
-        sleep(1)
-
-def start_car():
-    sc = smartcar.SmartCar()
-    global lane_detection_process
-    if lane_detection_process is None or not lane_detection_process.is_alive():
-        # Start the lane detection process
-        lane_detection_stop_flag.clear()
-        lane_detection_process = multiprocessing.Process(target=lane_detection)
-        lane_detection_process.start()
-        print("Self driveing is running...")
-        
-
-def robin_start_car():
-        # Call routines for driving the car
-        sc.speed = 10
-        sc.user_command()
-        sc.handle_actuators()
-        sc.handle_window()
-        sendframe(sc.frame)
-
-
-def stop_car():
-    sc = smartcar.SmartCar()
-    global lane_detection_process
-    # Set the stop flag to stop the lane detection
-    lane_detection_stop_flag.set()
-    if lane_detection_process is not None and lane_detection_process.is_alive():
-        lane_detection_process.join()
-        print("Self driveing has stopped!")
-        sc = None
-
         
         
 # CNN stuff
