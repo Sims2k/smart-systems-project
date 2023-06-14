@@ -274,72 +274,75 @@ def main():
                 sc.handle_window()
                 sendframe(sc.frame)
                 phase2send = phasecnn
-
-            elif int(steer) > 0:
+            
+            
+            if music == True:
+              print("music_start")
+              continue
+              
+            elif music == False:
+              print("music_stop")
+              continue 
+              
+              
+            if int(steer) > 0:
                 sc.speed = int(speed)
                 sc.steer = int(steer)
+                sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
                 sc.handle_window()
                 sendframe(sc.frame)
-                print("right")
                 continue 
 
                 
             elif int(steer) < 0:
                 sc.steer = int(speed)
                 sc.speed = int(steer)
+                sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
                 sc.handle_window()
                 sendframe(sc.frame)
-                print("left")
                 continue          
          
                 
             elif int(speed) == 10:
                 sc.speed = 20
+                sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
                 sc.handle_window()
                 sendframe(sc.frame)
-                print("test_start")
                 continue
                 
-            elif int(speed) > 0:
+            if int(speed) > 0:
                 sc.speed = int(speed)
+                sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
                 sc.handle_window()
                 sendframe(sc.frame)
-                print("speed "+speed)
                 continue
                                 
             elif int(speed) < 0: 
                 sc.speed = int(speed)
+                sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
                 sc.handle_window()
                 sendframe(sc.frame)
-                print("negativespeed "+speed)
                 continue
                 
             elif int(speed) == 0:
                 sc.speed = int(speed)
+                sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
                 sc.handle_window()
                 sendframe(sc.frame)
                 continue 
-                   
-            elif music == True:
-              print("music_start")
-              continue
-              
-            elif music == False:
-              print("music_stop")
-              continue
-              
+                
                
 
 
