@@ -307,7 +307,7 @@ def main():
                 continue          
          
                 
-            elif int(speed) == 10:
+            if int(speed) == 10:
                 sc.speed = 20
                 sc.lane_detection()
                 sc.user_command()
@@ -316,7 +316,7 @@ def main():
                 sendframe(sc.frame)
                 continue
                 
-            if int(speed) > 0:
+            elif int(speed) > 0:
                 sc.speed = int(speed)
                 sc.lane_detection()
                 sc.user_command()
