@@ -1,11 +1,54 @@
 import smartcar
-from app import * 
 import time
 import paho.mqtt.client as mqtt
 import paho.mqtt.subscribe as subscribe
 import cv2
 import numpy as np
+import multiprocessing 
 
+# Create a stop flag for synchronization
+lane_detection_stop_flag = multiprocessing.Event()
+lane_detection_process = None
+
+def lane_detection():
+    sc = smartcar.SmartCar()
+    while not lane_detection_stop_flag.is_set():
+        print("Self-driving is running...")
+        sc.lane_detection_loop()
+        sleep(1)
+
+def start_car():
+    sc = smartcar.SmartCar()
+    global lane_detection_process
+    if lane_detection_process is None or not lane_detection_process.is_alive():
+        # Start the lane detection process
+        lane_detection_stop_flag.clear()
+        lane_detection_process = multiprocessing.Process(target=lane_detection)
+        lane_detection_process.start()
+        print("Self driveing is running...")
+        
+
+def robin_start_car():
+        # Call routines for driving the car
+        sc.speed = 10
+        sc.user_command()
+        sc.handle_actuators()
+        sc.handle_window()
+        sendframe(sc.frame)
+
+
+def stop_car():
+    sc = smartcar.SmartCar()
+    global lane_detection_process
+    # Set the stop flag to stop the lane detection
+    lane_detection_stop_flag.set()
+    if lane_detection_process is not None and lane_detection_process.is_alive():
+        lane_detection_process.join()
+        print("Self driveing has stopped!")
+        sc = None
+
+        
+        
 # CNN stuff
 from PIL import Image, ImageFont, ImageDraw
 from pycoral.adapters import common
@@ -91,7 +134,7 @@ def on_message(client, userdata, message):
     global mode, phasemqtt, steer, speed, music
     steer = 0
     speed = 0
-    music = ""
+    music = None
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
     print(f"Received: topic={topic_str}  payload={payload_str}")
@@ -110,9 +153,9 @@ def on_message(client, userdata, message):
             speed = payload_str
     if topic_str == "SMARTCAR_control/music":
         if payload_str == "start":
-            music = "start"
+            music = True
         elif payload_str == "stop":
-            music == "stop"
+            music = False
     if topic_str == tl:
         phasemqtt = payload_str
 
@@ -233,27 +276,71 @@ def main():
                 phase2send = phasecnn
 
             elif int(steer) > 0:
+                sc.speed = int(speed)
+                sc.steer = int(steer)
+                sc.user_command()
+                sc.handle_actuators()
+                sc.handle_window()
+                sendframe(sc.frame)
                 print("right")
+                continue 
+
                 
             elif int(steer) < 0:
+                sc.steer = int(speed)
+                sc.speed = int(steer)
+                sc.user_command()
+                sc.handle_actuators()
+                sc.handle_window()
+                sendframe(sc.frame)
                 print("left")
+                continue          
+         
+                
+            elif int(speed) == 10:
+                sc.speed = 20
+                sc.user_command()
+                sc.handle_actuators()
+                sc.handle_window()
+                sendframe(sc.frame)
+                print("test_start")
+                continue
                 
             elif int(speed) > 0:
+                sc.speed = int(speed)
+                sc.user_command()
+                sc.handle_actuators()
+                sc.handle_window()
+                sendframe(sc.frame)
                 print("speed "+speed)
-                
+                continue
+                                
             elif int(speed) < 0: 
+                sc.speed = int(speed)
+                sc.user_command()
+                sc.handle_actuators()
+                sc.handle_window()
+                sendframe(sc.frame)
                 print("negativespeed "+speed)
-               
-            elif int(speed) == 0:
-                print("nospeed" +speed)
-                stop_car()
+                continue
                 
-            elif music == "start":
-                print("music_start")
-                break 
-            elif music == "stop":
-                print("music_stop")  
-                break  
+            elif int(speed) == 0:
+                sc.speed = int(speed)
+                sc.user_command()
+                sc.handle_actuators()
+                sc.handle_window()
+                sendframe(sc.frame)
+                continue 
+                   
+            elif music == True:
+              print("music_start")
+              continue
+              
+            elif music == False:
+              print("music_stop")
+              continue
+              
+               
 
 
             # mode standby
