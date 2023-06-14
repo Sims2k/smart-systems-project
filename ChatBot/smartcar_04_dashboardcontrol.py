@@ -295,16 +295,6 @@ def main():
                 sendframe(sc.frame)
                 continue 
 
-                
-            elif int(steer) < 0:
-                sc.steer = int(speed)
-                sc.speed = int(steer)
-                sc.lane_detection()
-                sc.user_command()
-                sc.handle_actuators()
-                sc.handle_window()
-                sendframe(sc.frame)
-                continue          
          
                 
             if int(speed) == 10:
