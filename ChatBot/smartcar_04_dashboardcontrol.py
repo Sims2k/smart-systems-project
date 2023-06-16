@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import multiprocessing
 from play_music import * 
+from app import * 
         
         
 # CNN stuff
@@ -236,7 +237,7 @@ def main():
             
             
             if music == True:
-                play_song()
+                play_song(text)
                 print("music_start")
                 continue
               
@@ -271,6 +272,7 @@ def main():
                 sc.handle_actuators()
                 sc.handle_window()
                 sendframe(sc.frame)
+                current_speed = int(speed)
                 continue
                 
             elif int(speed) == 0:
@@ -282,10 +284,9 @@ def main():
                 sendframe(sc.frame)
                 continue 
 
-            sc.speed == 
 
             if int(steer) > 0:
-                sc.speed = int(speed)
+                sc.speed = current_speed
                 sc.steer = int(steer)
                 sc.lane_detection()
                 sc.user_command()
