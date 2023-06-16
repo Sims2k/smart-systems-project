@@ -4,7 +4,8 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.subscribe as subscribe
 import cv2
 import numpy as np
-import multiprocessing 
+import multiprocessing
+from play_music import * 
         
         
 # CNN stuff
@@ -235,26 +236,16 @@ def main():
             
             
             if music == True:
-              print("music_start")
-              continue
+                play_song()
+                print("music_start")
+                continue
               
             elif music == False:
-              print("music_stop")
-              continue 
-              
-              
-            if int(steer) > 0:
-                sc.speed = int(speed)
-                sc.steer = int(steer)
-                sc.lane_detection()
-                sc.user_command()
-                sc.handle_actuators()
-                sc.handle_window()
-                sendframe(sc.frame)
+                stop_playing()
+                print("music_stop")
                 continue 
-
-         
-                
+              
+          
             if int(speed) == 10:
                 sc.speed = 20
                 sc.lane_detection()
@@ -290,9 +281,19 @@ def main():
                 sc.handle_window()
                 sendframe(sc.frame)
                 continue 
-                
-               
 
+            sc.speed == 
+
+            if int(steer) > 0:
+                sc.speed = int(speed)
+                sc.steer = int(steer)
+                sc.lane_detection()
+                sc.user_command()
+                sc.handle_actuators()
+                sc.handle_window()
+                sendframe(sc.frame)
+                continue 
+                
 
             # mode standby
             else:
