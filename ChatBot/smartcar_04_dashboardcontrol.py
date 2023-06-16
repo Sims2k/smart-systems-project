@@ -272,7 +272,6 @@ def main():
                 sc.handle_actuators()
                 sc.handle_window()
                 sendframe(sc.frame)
-                current_speed = int(speed)
                 continue
                 
             elif int(speed) == 0:
@@ -284,7 +283,8 @@ def main():
                 sendframe(sc.frame)
                 continue 
 
-
+            current_speed = int(speed) 
+            
             if int(steer) > 0:
                 sc.speed = current_speed
                 sc.steer = int(steer)
