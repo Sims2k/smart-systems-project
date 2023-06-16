@@ -8,7 +8,7 @@ import multiprocessing
 from play_music import * 
 from app import * 
         
-        
+
 # CNN stuff
 from PIL import Image, ImageFont, ImageDraw
 from pycoral.adapters import common
