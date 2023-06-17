@@ -94,7 +94,7 @@ def on_message(client, userdata, message):
     global mode, phasemqtt, steer, speed, music
     steer = 0
     speed = 0
-    music = None
+    music = ""
     topic_str = message.topic
     payload_str = message.payload.decode('ASCII')
     print(f"Received: topic={topic_str}  payload={payload_str}")
@@ -112,10 +112,10 @@ def on_message(client, userdata, message):
     if topic_str == "SMARTCAR_control/speed":
             speed = payload_str
     if topic_str == "SMARTCAR_control/music":
-        if payload_str == "start":
-            music = True
+        if payload_str != "stop":
+            music = payload_str
         elif payload_str == "stop":
-            music = False
+            music = "stop"
     if topic_str == tl:
         phasemqtt = payload_str
 
@@ -236,12 +236,12 @@ def main():
                 phase2send = phasecnn
             
             
-            if music == True:
-                play_song(text)
+            if music != "stop":
+                play_song(music)
                 print("music_start")
                 continue
               
-            elif music == False:
+            elif music == "stop":
                 stop_playing()
                 print("music_stop")
                 continue 
