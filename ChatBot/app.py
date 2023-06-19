@@ -37,36 +37,38 @@ def stop_car():
         send_message("Self driveing has stopped!")
         sc = None
 
-send_message("Hello, how can I help you?")
 
-next_update_id = 0
-active_bot = True
+def bot_app():
+    send_message("Hello, how can I help you?")
 
-while active_bot:
-    address = base_address + "/getUpdates"    
-    data = {"offset": next_update_id}
-    response = get(address, json=data)
-    dictionary_of_response = response.json()
-    data = response.json()
-    json_formatted_str = json.dumps(dictionary_of_response["result"], indent=2)
-    print(json_formatted_str)
-    for result in dictionary_of_response["result"]:
-        message = result["message"]
-        file_datetime = unix_to_datetime(message)
-        print("file time:" + str(file_datetime))
-        if "text" in message:
-            text = message["text"].lower()
-            if text == "start":
-                start_car()
-            elif text == "stop":
-                stop_car()
-        elif "voice" in message:
-            file_id = message["voice"]["file_id"]
-            audio_file = download(file_id, "voice")
-            translate_audio(audio_file)
-        elif "photo" in message:
-            photo_high_res = message["photo"][-1]
-            file_id = photo_high_res["file_id"]
-            download(file_id, "photo")
-            
-        next_update_id = result["update_id"] + 1
+    next_update_id = 0
+    active_bot = True
+
+    while active_bot:
+        address = base_address + "/getUpdates"    
+        data = {"offset": next_update_id}
+        response = get(address, json=data)
+        dictionary_of_response = response.json()
+        data = response.json()
+        json_formatted_str = json.dumps(dictionary_of_response["result"], indent=2)
+        print(json_formatted_str)
+        for result in dictionary_of_response["result"]:
+            message = result["message"]
+            file_datetime = unix_to_datetime(message)
+            print("file time:" + str(file_datetime))
+            if "text" in message:
+                text = message["text"].lower()
+                if text == "start":
+                    start_car()
+                elif text == "stop":
+                    stop_car()
+            elif "voice" in message:
+                file_id = message["voice"]["file_id"]
+                audio_file = download(file_id, "voice")
+                translate_audio(audio_file)
+            elif "photo" in message:
+                photo_high_res = message["photo"][-1]
+                file_id = photo_high_res["file_id"]
+                download(file_id, "photo")
+                
+            next_update_id = result["update_id"] + 1
