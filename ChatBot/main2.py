@@ -167,6 +167,7 @@ def main():
                         sc.handle_actuators()
                         sc.handle_window()
                         sendframe(sc.frame)
+                        continue
                     elif text == "stop":
                         sc.speed = 0
                         current_speed = sc.speed
@@ -175,6 +176,7 @@ def main():
                         sc.handle_actuators()
                         sc.handle_window()
                         sendframe(sc.frame)
+                        continue
                 elif "voice" in message:
                     file_id = message["voice"]["file_id"]
                     audio_file = download(file_id, "voice")
@@ -269,7 +271,7 @@ def main():
                 continue 
               
           
-            if int(speed) == 10:
+            if int(speed) == 20:
                 sc.speed = 20
                 current_speed = sc.speed
                 sc.lane_detection()
@@ -309,11 +311,10 @@ def main():
                 sendframe(sc.frame)
                 continue 
 
-            current_speed = int(speed) 
             
             if int(steer) > 0:
                 sc.steer = int(steer)
-                current_speed = sc.speed
+                sc.speed = current_speed
                 sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
