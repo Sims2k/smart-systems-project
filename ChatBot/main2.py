@@ -51,38 +51,8 @@ font = ImageFont.truetype(r'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
 # ID of the traffic light
 tl = "TL05"
 
-''' Operation mode from the dashboard
-    standby:
-        actuators off
-        lane detection off
-        traffic light detection off
-        connected to the MQTT broker
-        camera feed sent through TCP socket stream
-    lanedetection:
-        car speed 40
-        lane detection on
-        traffic light detection off
-        connected to the MQTT broker
-        camera feed sent through TCP socket stream
-    tlviamqtt:
-        car speed
-            40 for green TL phase
-            30 for yellow TL phase
-            0 for red and redyellow phase
-        lane detection on
-        traffic light detection via mqtt
-        connected to the MQTT broker
-        camera feed sent through TCP socket stream
-    tlviacnn:
-        car speed
-            40 for green TL phase
-            30 for yellow TL phase
-            0 for red and redyellow phase
-        lane detection on
-        traffic light detection via CNN
-        connected to the MQTT broker
-        camera feed sent through TCP socket stream
-'''
+# Mode of the car
+current_speed = 0
 mode = "standby"
 
 # Phase of the traffic light
@@ -161,8 +131,7 @@ def analyze_draw_objects(draw, objs):
 def main():
     send_message("Hello, how can I help you?")
     next_update_id = 0
-    
-    global phasecnn
+    global phasecnn, current_speed
     # MQTT connection
     client = mqtt.Client()
     client.connect("localhost", 1883, 60)
@@ -191,6 +160,8 @@ def main():
                 if "text" in message:
                     text = message["text"].lower()
                     if text == "start":
+                        sc.speed = 20
+                        current_speed = sc.speed
                         sc.lane_detection()
                         sc.user_command()
                         sc.handle_actuators()
@@ -198,6 +169,7 @@ def main():
                         sendframe(sc.frame)
                     elif text == "stop":
                         sc.speed = 0
+                        current_speed = sc.speed
                         sc.lane_detection()
                         sc.user_command()
                         sc.handle_actuators()
@@ -221,6 +193,7 @@ def main():
             if mode == "lanedetection":
                 if sc.speed < 40:
                     sc.speed += 1
+                    current_speed = sc.speed
                 # Call routines for driving the car
                 sc.lane_detection()
                 sc.user_command()
@@ -298,6 +271,7 @@ def main():
           
             if int(speed) == 10:
                 sc.speed = 20
+                current_speed = sc.speed
                 sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
@@ -307,6 +281,7 @@ def main():
                 
             elif int(speed) > 0:
                 sc.speed = int(speed)
+                current_speed = sc.speed
                 sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
@@ -316,6 +291,7 @@ def main():
                                 
             elif int(speed) < 0: 
                 sc.speed = int(speed)
+                current_speed = sc.speed
                 sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
@@ -325,6 +301,7 @@ def main():
                 
             elif int(speed) == 0:
                 sc.speed = int(speed)
+                current_speed = sc.speed
                 sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
@@ -335,8 +312,8 @@ def main():
             current_speed = int(speed) 
             
             if int(steer) > 0:
-                sc.speed = current_speed
                 sc.steer = int(steer)
+                current_speed = sc.speed
                 sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
