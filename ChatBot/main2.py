@@ -333,7 +333,7 @@ def main():
                 sc.handle_window()
                 sendframe(sc.frame)
             # Publish the current values of the SmartCar
-            publish_mqtt(client, mode, sc.speed, sc.steer, sc.campan, sc.camtilt, phase2send, music)
+            publish_mqtt(client, mode, sc.speed, sc.steer, sc.campan, sc.camtilt, phase2send)
             
     finally:
         # Clean up the SmartCar object
