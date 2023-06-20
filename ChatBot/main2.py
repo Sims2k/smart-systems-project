@@ -5,18 +5,8 @@ import paho.mqtt.subscribe as subscribe
 import cv2
 import numpy as np
 import multiprocessing
-
-
-#Bot stuff
-from app import * 
-from play_music import * 
-from requests import get
-import multiprocessing
-from time import sleep
-import json
-from urllib.request import urlretrieve
-from bot import *
-        
+from play_music import *
+from app import *
 
 # CNN stuff
 from PIL import Image, ImageFont, ImageDraw
@@ -30,20 +20,19 @@ import numpy
 import socket
 import base64
 
-#HOST = '192.168.0.109'    # The remote host
-HOST = 'localhost'    # The remote host
-PORT = 50007              # The same port as used by the server
+# HOST = '192.168.0.109'    # The remote host
+HOST = 'localhost'  # The remote host
+PORT = 50007  # The same port as used by the server
 
 # Prepare the model
 model = "red3_edgetpu.tflite"
 CLASSES = ["red", "redyellow", "green", "yellow", "off", "Person"]
-COLORS_BGR = [[0, 0, 255], [49,125,237], [80, 176, 0], [0, 192, 255], [0, 0, 0], [100, 100, 100]]
+COLORS_BGR = [[0, 0, 255], [49, 125, 237], [80, 176, 0], [0, 192, 255], [0, 0, 0], [100, 100, 100]]
 COLORS = ['red', 'orange', 'green', 'yellow', 'black', 'grey']
 THRESHOLD = 0.25
 # Prepare model outputs
 interpreter = make_interpreter(model)
 interpreter.allocate_tensors()
-
 
 # Font
 font = ImageFont.truetype(r'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 20)
@@ -51,13 +40,44 @@ font = ImageFont.truetype(r'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
 # ID of the traffic light
 tl = "TL05"
 
-# Mode of the car
-current_speed = 0
+''' Operation mode from the dashboard
+    standby:
+        actuators off
+        lane detection off
+        traffic light detection off
+        connected to the MQTT broker
+        camera feed sent through TCP socket stream
+    lanedetection:
+        car speed 40
+        lane detection on
+        traffic light detection off
+        connected to the MQTT broker
+        camera feed sent through TCP socket stream
+    tlviamqtt:
+        car speed
+            40 for green TL phase
+            30 for yellow TL phase
+            0 for red and redyellow phase
+        lane detection on
+        traffic light detection via mqtt
+        connected to the MQTT broker
+        camera feed sent through TCP socket stream
+    tlviacnn:
+        car speed
+            40 for green TL phase
+            30 for yellow TL phase
+            0 for red and redyellow phase
+        lane detection on
+        traffic light detection via CNN
+        connected to the MQTT broker
+        camera feed sent through TCP socket stream
+'''
 mode = "standby"
 
 # Phase of the traffic light
 phasemqtt = "red"
 phasecnn = "red"
+
 
 def sendframe(frame):
     framestream = cv2.resize(frame, (320, 240))
@@ -67,6 +87,11 @@ def sendframe(frame):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
         s.sendall(bytes(b64, 'utf-8'))
+
+
+    
+    
+
 
 # MQTT receive callback
 def on_message(client, userdata, message):
@@ -87,9 +112,9 @@ def on_message(client, userdata, message):
         elif payload_str == "tlviacnn":
             mode = "tlviacnn"
     if topic_str == "SMARTCAR_control/turn":
-            steer = payload_str
+        steer = payload_str
     if topic_str == "SMARTCAR_control/speed":
-            speed = payload_str
+        speed = payload_str
     if topic_str == "SMARTCAR_control/music":
         if payload_str != "stop":
             music = payload_str
@@ -109,30 +134,39 @@ def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase, song_name
     client.publish("SMARTCAR_status/tlphase", tlphase)
     client.publish("SMARTCAR_status/music", song_name)
     client.publish("SMARTCAR_status/telegram", telegram_message)
-    
+
 
 def analyze_draw_objects(draw, objs):
     objects = []
     """Draws the bounding box and label for each object."""
     for obj in objs:
-        if obj.id > len(CLASSES)-1:
+        if obj.id > len(CLASSES) - 1:
             print("Unknown class id:", obj.id)
         else:
             bbox = obj.bbox
             draw.rectangle([(bbox.xmin, bbox.ymin), (bbox.xmax, bbox.ymax)],
                            outline=COLORS[obj.id], width=2)
             draw.text((bbox.xmin, bbox.ymin),
-                      '%s (%d)' % (CLASSES[obj.id], obj.score*100),
+                      '%s (%d)' % (CLASSES[obj.id], obj.score * 100),
                       fill=COLORS[obj.id])
             objects.append(CLASSES[obj.id])
-            #print(str(bbox.xmin) + " " + str(bbox.xmax) + " " + str(bbox.ymin) + " " + str(bbox.ymax) + " Area of rectangle is " + str((bbox.xmax-bbox.xmin)*(bbox.ymax-bbox.ymin)))
-            #print('%d\n%s\n%.2f' % (obj.id, CLASSES[obj.id], obj.score))
+            # print(str(bbox.xmin) + " " + str(bbox.xmax) + " " + str(bbox.ymin) + " " + str(bbox.ymax) + " Area of rectangle is " + str((bbox.xmax-bbox.xmin)*(bbox.ymax-bbox.ymin)))
+            # print('%d\n%s\n%.2f' % (obj.id, CLASSES[obj.id], obj.score))
     return objects
 
+
+#def drive():
+#    sc = smartcar.SmartCar(use_ultrasonic=True, use_local_window=False)
+#    sc.lane_detection()
+ #   sc.user_command()
+ #   sc.handle_actuators()
+ #   sc.handle_window()
+  #  sendframe(sc.frame)
+    
 def main():
     send_message("Hello, how can I help you?")
     next_update_id = 0
-    global phasecnn, current_speed
+    global phasecnn
     # MQTT connection
     client = mqtt.Client()
     client.connect("localhost", 1883, 60)
@@ -144,9 +178,10 @@ def main():
     client.subscribe(tl)
     client.loop_start()
     # SmartCar object without using the local camera and control window
-    sc = smartcar.SmartCar(use_ultrasonic = True, use_local_window = False)
+    sc = smartcar.SmartCar(use_ultrasonic=True, use_local_window=False)
     try:
         while not sc.quit:
+        
             address = base_address + "/getUpdates"    
             data = {"offset": next_update_id}
             response = get(address, json=data)
@@ -162,7 +197,6 @@ def main():
                     text = message["text"].lower()
                     if text == "start":
                         sc.speed = 20
-                        current_speed = sc.speed
                         sc.lane_detection()
                         sc.user_command()
                         sc.handle_actuators()
@@ -171,7 +205,6 @@ def main():
                         continue
                     elif text == "stop":
                         sc.speed = 0
-                        current_speed = sc.speed
                         sc.lane_detection()
                         sc.user_command()
                         sc.handle_actuators()
@@ -188,15 +221,14 @@ def main():
                     download(file_id, "photo")
 
                 next_update_id = result["update_id"] + 1
-
+                
             phase2send = "off"
-            # receive camera image and ultrasonic distance 
+            # receive camera image and ultrasonic distance
             sc.handle_sensors()
             # mode lanedetection
             if mode == "lanedetection":
                 if sc.speed < 40:
                     sc.speed += 1
-                    current_speed = sc.speed
                 # Call routines for driving the car
                 sc.lane_detection()
                 sc.user_command()
@@ -260,71 +292,47 @@ def main():
                 sendframe(sc.frame)
                 phase2send = phasecnn
             
-            
-            if music != "start":
-                play_song(music)
-                print("music_start")
-                continue
-              
-            elif music == "stop":
-                stop_playing()
-                print("music_stop")
-                continue 
-              
-          
-            if int(speed) == 20:
-                sc.speed = 20
-                current_speed = sc.speed
-                sc.lane_detection()
-                sc.user_command()
-                sc.handle_actuators()
-                sc.handle_window()
-                sendframe(sc.frame)
-                continue
-                
-            elif int(speed) > 0:
-                sc.speed = int(speed)
-                current_speed = sc.speed
-                sc.lane_detection()
-                sc.user_command()
-                sc.handle_actuators()
-                sc.handle_window()
-                sendframe(sc.frame)
-                continue
-                                
-            elif int(speed) < 0: 
-                sc.speed = int(speed)
-                current_speed = sc.speed
-                sc.lane_detection()
-                sc.user_command()
-                sc.handle_actuators()
-                sc.handle_window()
-                sendframe(sc.frame)
-                continue
-                
-            elif int(speed) == 0:
-                sc.speed = int(speed)
-                current_speed = sc.speed
-                sc.lane_detection()
-                sc.user_command()
-                sc.handle_actuators()
-                sc.handle_window()
-                sendframe(sc.frame)
-                continue 
-
+            current_speed = int(speed)
+            print(current_speed)
             
             if int(steer) > 0:
-                sc.speed = current_speed
                 sc.steer = int(steer)
-                sc.lane_detection()
-                sc.user_command()
-                sc.handle_actuators()
-                sc.handle_window()
-                sendframe(sc.frame)
-                continue 
-                
+                sc.drive()
+                continue
+            
+            
+            if int(speed) == 10:
+                sc.speed = 20
+                sc.drive()
+                continue
 
-            # mode standby
+            elif int(speed) > 0:
+                sc.speed = int(speed)
+                sc.drive()
+                continue
+
+            elif int(speed) < 0:
+                sc.speed = int(speed)
+                sc.drive()
+                continue
+
+            elif int(speed) == 0:
+                sc.speed = int(speed)
+                sc.drive()
+                continue
+                
+            
+            if music != "stop":
+                #play_song(music)
+                print("music_start")
+                continue
+
+            elif music == "stop":
+                #stop_playing()
+                print("music_stop")
+                continue
+
+                # mode standby
             else:
                 sc.speed = 0
                 sc.p_part = 0
@@ -334,8 +342,8 @@ def main():
                 sc.handle_window()
                 sendframe(sc.frame)
             # Publish the current values of the SmartCar
-            publish_mqtt(client, mode, sc.speed, sc.steer, sc.campan, sc.camtilt, phase2send)
-            
+            publish_mqtt(client, mode, sc.speed, sc.steer, sc.campan, sc.camtilt, phase2send, music)
+
     finally:
         # Clean up the SmartCar object
         sc = None
@@ -347,6 +355,7 @@ def main():
         client.unsubscribe("SMARTCAR_control/speed")
         client.unsubscribe("SMARTCAR_control/music")
         client.disconnect()
+
 
 if __name__ == "__main__":
     main()
