@@ -121,7 +121,7 @@ def on_message(client, userdata, message):
 
 
 # MQTT publishing of smartcar values
-def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase, song_name):
+def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase, song_name, telegram_message):
     client.publish("SMARTCAR_status/mode", mode)
     client.publish("SMARTCAR_status/speed", speed)
     client.publish("SMARTCAR_status/steer", steer)
@@ -129,6 +129,7 @@ def publish_mqtt(client, mode, speed, steer, campan, camtilt, tlphase, song_name
     client.publish("SMARTCAR_status/camtilt", camtilt)
     client.publish("SMARTCAR_status/tlphase", tlphase)
     client.publish("SMARTCAR_status/music", song_name)
+    client.publish("SMARTCAR_status/telegram", telegram_message)
     
 
 def analyze_draw_objects(draw, objs):
@@ -255,6 +256,15 @@ def main():
                 sc.handle_window()
                 sendframe(sc.frame)
                 continue
+            
+            elif int(speed) == 0:
+                sc.speed = int(speed)
+                sc.lane_detection()
+                sc.user_command()
+                sc.handle_actuators()
+                sc.handle_window()
+                sendframe(sc.frame)
+                continue 
                 
             elif int(speed) > 0:
                 sc.speed = int(speed)
@@ -264,26 +274,18 @@ def main():
                 sc.handle_window()
                 sendframe(sc.frame)
                 continue
-                                
-            elif int(speed) < 0: 
-                sc.speed = int(speed)
-                sc.lane_detection()
-                sc.user_command()
-                sc.handle_actuators()
-                sc.handle_window()
-                sendframe(sc.frame)
-                continue
-                
-            elif int(speed) == 0:
-                sc.speed = int(speed)
-                sc.lane_detection()
-                sc.user_command()
-                sc.handle_actuators()
-                sc.handle_window()
-                sendframe(sc.frame)
-                continue 
 
-            current_speed = int(speed) 
+            elif int(speed) < 0:
+                sc.speed = int(speed)
+                sc.lane_detection()
+                sc.user_command()
+                sc.handle_actuators()
+                sc.handle_window()
+                sendframe(sc.frame)
+                continue                   
+          
+
+            #current_speed = int(speed) 
             
             if int(steer) > 0:
                 sc.speed = current_speed
