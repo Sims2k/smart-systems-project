@@ -260,7 +260,7 @@ def main():
                 phase2send = phasecnn
             
             
-            if music != "stop":
+            if music != "start":
                 play_song(music)
                 print("music_start")
                 continue
@@ -313,8 +313,8 @@ def main():
 
             
             if int(steer) > 0:
-                sc.steer = int(steer)
                 sc.speed = current_speed
+                sc.steer = int(steer)
                 sc.lane_detection()
                 sc.user_command()
                 sc.handle_actuators()
