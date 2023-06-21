@@ -731,7 +731,8 @@ class SmartCar(object):
             self.handle_actuators()
             self.handle_window()
 
-             
+    def sign_detection(self):
+                
     def drive(self):
       self.lane_detection()
       self.user_command()
