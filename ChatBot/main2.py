@@ -324,6 +324,7 @@ def main():
             
             if music != "stop":
                 #play_song(music)
+                #publish_mqtt(song_name)
                 print("music_start")
                 continue
 
