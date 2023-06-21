@@ -1,12 +1,12 @@
 import os
-from smartcar_04_dashboardcontrol import publish_mqtt
+import sys
+import unicodedata
 import speech_recognition as sr
 from pydub import AudioSegment
 from time import sleep
 from youtube_search import YoutubeSearch
 from pytube import YouTube
 from pytube.exceptions import RegexMatchError
-
 
 # Define the functions
 def convert_audio(input_file, output_file, output_format):
@@ -46,19 +46,55 @@ def play_song(text):
         if len(results) > 0:
             print("Search Results:")
             for i, video in enumerate(results, start=1):
-                print(f"{i}. {video['title']}")
-            print()
+                title = video['title']
+                sanitized_title = sanitize_string(title)
+                try:
+                    print(f"{i}. {sanitized_title}")
+                except UnicodeEncodeError:
+                    print(f"{i}. {sanitized_title.encode(sys.stdout.encoding, errors='replace').decode()}")
 
             # Select the first result to play
             video_id = results[0]["id"]
             youtube_url = f"https://www.youtube.com/watch?v={video_id}"
-            audio_url = YouTube(youtube_url).streams.filter(only_audio=True).first().url
-            song_name = results[0]['title']
-            publish_mqtt(song_name) 
-            print(f"Now playing: {results[0]['title']}")
-            os.system(f"mpg123 -q {audio_url} > /dev/null 2>&1 &")
-            sleep(2)
+            audio_file = download_audio(youtube_url)
+            if audio_file:
+                song_name = results[0]['title']
+                #publish_mqtt(song_name)
+                print(f"Now playing: {results[0]['title']}")
+                print("COMMAND: " + r"C:\PATH_Programs\mpg123-1.31.3-x86-64\mpg123.exe -q " + audio_file + " > NUL 2>&1")
+                os.system(r"C:\PATH_Programs\mpg123-1.31.3-x86-64\mpg123.exe -q " + audio_file + " > NUL 2>&1")
+                sleep(2)
+            else:
+                print("Failed to download the audio.")
         else:
             print("No results found for the song.")
     except RegexMatchError:
         print("No results found for the song.")
+
+def sanitize_string(text):
+    sanitized_text = "".join(
+        char if unicodedata.category(char) != "Cc" else f"[Unsupported Character: U+{ord(char):04X}]"
+        for char in text
+    )
+    return sanitized_text
+
+def download_audio(url):
+    try:
+        video = YouTube(url)
+        audio_stream = video.streams.filter(only_audio=True).first()
+        if audio_stream:
+            # Set the output path to the "songs" folder
+            output_path = os.path.join(os.getcwd(), "ChatBot\songs")
+            os.makedirs(output_path, exist_ok=True)  # Create the folder if it doesn't exist
+            pre_audio_file = audio_stream.download(output_path=output_path, filename_prefix="audio_")
+            # Replace spaces with underscores in the file name
+            audio_file = pre_audio_file.replace(" ", "_")
+            os.rename(pre_audio_file, audio_file)
+            return audio_file
+        else:
+            print("No audio stream available for the video.")
+            return None
+    except RegexMatchError:
+        print("Invalid URL or no matching video found.")
+        return None
+
