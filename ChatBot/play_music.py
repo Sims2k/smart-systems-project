@@ -61,8 +61,9 @@ def play_song(text):
                 song_name = results[0]['title']
                 #publish_mqtt(song_name)
                 print(f"Now playing: {results[0]['title']}")
-                print("COMMAND: " + r"C:\PATH_Programs\mpg123-1.31.3-x86-64\mpg123.exe -q " + audio_file + " > NUL 2>&1")
-                os.system(r"C:\PATH_Programs\mpg123-1.31.3-x86-64\mpg123.exe -q " + audio_file + " > NUL 2>&1")
+                #print("COMMAND: " + r"C:\PATH_Programs\mpg123-1.31.3-x86-64\mpg123.exe -q " + audio_file + " > NUL 2>&1")
+                os.system(f"mpg123 -q {audio_file} > /dev/null 2>&1 &")
+                #os.system(r"C:\PATH_Programs\mpg123-1.31.3-x86-64\mpg123.exe -q " + audio_file + " > NUL 2>&1")
                 sleep(2)
             else:
                 print("Failed to download the audio.")
