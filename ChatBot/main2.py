@@ -300,7 +300,6 @@ def main():
                 sc.drive()
                 continue
             
-            
             if int(speed) == 20:
                 sc.speed = 20
                 sc.drive()
